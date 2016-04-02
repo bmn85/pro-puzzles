@@ -22,21 +22,23 @@ class TaskWrapper {
         Reader reader = this.isOnlineJudge
                 ? new InputStreamReader(System.in)
                 : new FileReader("input.txt");
-        this.in = new StreamTokenizer(new BufferedReader(reader));
 
         Writer writer = this.isOnlineJudge
                 ? new OutputStreamWriter(System.out)
                 : new FileWriter("output.txt");
+
+        this.in  = new StreamTokenizer(new BufferedReader(reader));
         this.out = new PrintWriter(writer);
     }
 
     public void solve() throws IOException {
-        while (this.in.nextToken() != 0 && this.in.sval != "-1") {
-            System.out.print(this.in.nextToken());
+        while (this.in.nextToken() != StreamTokenizer.TT_EOF) {
+            if (this.in.nval == -1) break;
+
             String targetNumber = this.in.sval;
 
             this.in.nextToken();
-            int helperSize = (int)this.in.nval;
+            Integer helperSize  = (int)this.in.nval;
 
             Trie t = new Trie();
             for (int i = 0; i < helperSize; i++) {
@@ -44,8 +46,11 @@ class TaskWrapper {
                 t.addWord(this.in.sval);
             }
 
-            this.out.print(this.findWords(targetNumber));
+            this.out.println(this.findWords(targetNumber));
         }
+
+        this.out.flush();
+        this.out.close();
     }
 
     private String findWords(String targetNumber) {
