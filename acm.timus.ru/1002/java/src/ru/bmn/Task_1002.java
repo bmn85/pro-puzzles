@@ -3,6 +3,7 @@ package ru.bmn;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 
 
@@ -51,23 +52,37 @@ class TaskWrapper {
                 t.addWord(this.in.sval);
             }
 
-            this.out.println(this.findWords(t, targetNumberStr.toCharArray()));
+            this.out.println(this.findShortPhrase(t, targetNumberStr.toCharArray()));
         }
 
         this.out.flush();
         this.out.close();
     }
 
-    private String findWords(Trie t, char[] digitPath) {
-		char[] dp = digitPath;
+	private String findShortPhrase(Trie t, char[] digitPath) {
+		ArrayList<Phrase> phrases = this.findAllPhrases(t, digitPath);
+		phrases.sort(new Comparator<Phrase>() {
+			@Override
+			public int compare(Phrase o1, Phrase o2) {
+				if      (o1.wordsCount() > o2.wordsCount()) return 1;
+				else if (o1.wordsCount() < o2.wordsCount()) return -1;
+				else return 0;
+			}
+		});
+		return phrases.size() > 0 ? phrases.get(0).toString() : new Phrase().toString();
+	}
+
+    private Phrase findPhrase(Trie t, char[] digitStartPath, char[] digitFullPath) {
+		char[] dsp = digitStartPath;
+		boolean isFirstWord = true;
 		Phrase phrase = new Phrase();
 		phrase.setDefaultValue("No solution.");
 
-		while (dp.length > 0) {
-			String word = t.findWord(dp);
+		while (dsp.length > 0) {
+			String word = t.findWord(dsp);
 			if (word == null) {
-				if (dp.length > 1) {
-					dp = Arrays.copyOfRange(dp, 0, dp.length - 1);
+				if (!isFirstWord && dsp.length > 1) {
+					dsp = Arrays.copyOfRange(dsp, 0, dsp.length - 1);
 				}
 				else {
 					break;
@@ -75,19 +90,36 @@ class TaskWrapper {
 			}
 			else {
 				phrase.addWord(word);
-				dp = Arrays.copyOfRange(digitPath, phrase.symbolsCount(), digitPath.length);
+				dsp = Arrays.copyOfRange(digitFullPath, phrase.symbolsCount(), digitFullPath.length);
+				isFirstWord = false;
 			}
 		}
 
-        return phrase.toString();
+		if (phrase.symbolsCount() == digitFullPath.length) {
+			return phrase;
+		}
+		else {
+			return null;
+		}
     }
 
+	private ArrayList<Phrase> findAllPhrases(Trie t, char[] digitPath) {
+		ArrayList<Phrase> result = new ArrayList<>();
+
+		for (int i = 0; i < digitPath.length - 1; i++) {
+			Phrase p = this.findPhrase(t, Arrays.copyOfRange(digitPath, 0, digitPath.length - i), digitPath);
+			if (p != null) {
+				result.add(p);
+			}
+		}
+		return result;
+	}
 
 }
 
 class Phrase {
 	private ArrayList<String> words = new ArrayList<>();
-	private String defaultValue;
+	private static String defaultValue;
 
 	public void addWord(String word) {
 		this.words.add(word);
@@ -110,6 +142,10 @@ class Phrase {
 			result += word.length();
 		}
 		return result;
+	}
+
+	public int wordsCount() {
+		return this.words.size();
 	}
 
 	public void setDefaultValue(String defaultValue) {

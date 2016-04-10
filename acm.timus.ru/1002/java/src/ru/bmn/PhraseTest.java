@@ -10,9 +10,6 @@ public class PhraseTest extends TestCase {
 	public void testToString() throws Exception {
 		Phrase p = new Phrase();
 
-		p.setDefaultValue("default string");
-		assertEquals("default string", p.toString());
-
 		p.addWord("Hello");
 		p.addWord("World!");
 
@@ -28,5 +25,23 @@ public class PhraseTest extends TestCase {
 		p.addWord("xyz");
 
 		assertEquals(6, p.symbolsCount());
+	}
+
+	public void testWordsCount() throws Exception {
+		Phrase p = new Phrase();
+
+		assertEquals(0, p.wordsCount());
+
+		p.addWord("abc");
+		p.addWord("xyz");
+
+		assertEquals(2, p.wordsCount());
+	}
+
+	public void testSetDefaultValue() throws Exception {
+		Phrase p = new Phrase();
+
+		p.setDefaultValue("default string");
+		assertEquals("default string", p.toString());
 	}
 }
