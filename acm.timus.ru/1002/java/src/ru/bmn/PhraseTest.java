@@ -18,4 +18,15 @@ public class PhraseTest extends TestCase {
 
 		assertEquals("Hello World!", p.toString());
 	}
+
+	public void testSymbolsCount() throws Exception {
+		Phrase p = new Phrase();
+
+		assertEquals(0, p.symbolsCount());
+
+		p.addWord("abc");
+		p.addWord("xyz");
+
+		assertEquals(6, p.symbolsCount());
+	}
 }

@@ -67,8 +67,7 @@ class TaskWrapper {
 			String word = t.findWord(dp);
 			if (word == null) {
 				if (dp.length > 1) {
-					// Ищем слово поменьше
-					dp = Arrays.copyOfRange(digitPath, 0, digitPath.length - 1);
+					dp = Arrays.copyOfRange(dp, 0, dp.length - 1);
 				}
 				else {
 					break;
@@ -76,7 +75,7 @@ class TaskWrapper {
 			}
 			else {
 				phrase.addWord(word);
-				dp = Arrays.copyOfRange(digitPath, word.length() - 1, digitPath.length);
+				dp = Arrays.copyOfRange(digitPath, phrase.symbolsCount(), digitPath.length);
 			}
 		}
 
@@ -87,7 +86,7 @@ class TaskWrapper {
 }
 
 class Phrase {
-	private ArrayList<String> words = new ArrayList<String>();
+	private ArrayList<String> words = new ArrayList<>();
 	private String defaultValue;
 
 	public void addWord(String word) {
@@ -103,6 +102,14 @@ class Phrase {
 		return result.length() > 0
 				? result.substring(0, result.length() - 1)
 				: this.defaultValue;
+	}
+
+	public int symbolsCount() {
+		int result = 0;
+		for (String word: this.words) {
+			result += word.length();
+		}
+		return result;
 	}
 
 	public void setDefaultValue(String defaultValue) {
@@ -148,10 +155,6 @@ class Trie {
         this.childs = new HashMap<>();
     }
 
-	private Character charToDigit(Character c) {
-		return DIGIT_MAP.get(c);
-	}
-
 	public void addWord(String word) {
         char[] chars = word.toCharArray();
 
@@ -174,8 +177,6 @@ class Trie {
     }
 
     public String findWord(char[] digits) {
-        String result = null;
-
         if (this.childs.containsKey(digits[0])) {
             if ((digits.length == 1) && this.childs.get(digits[0]).word != null) {
                 return this.childs.get(digits[0]).word;
@@ -184,6 +185,6 @@ class Trie {
                 return this.childs.get(digits[0]).findWord(Arrays.copyOfRange(digits, 1, digits.length));
             }
         }
-        return result;
+        return null;
     }
 }
