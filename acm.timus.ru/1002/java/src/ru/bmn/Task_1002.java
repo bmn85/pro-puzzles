@@ -1,6 +1,7 @@
 package ru.bmn;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -59,6 +60,8 @@ class TaskWrapper {
 
     private String findWords(Trie t, char[] digitPath) {
 		char[] dp = digitPath;
+		Phrase phrase = new Phrase();
+		phrase.setDefaultValue("No solution.");
 
 		while (dp.length > 0) {
 			String word = t.findWord(dp);
@@ -67,13 +70,44 @@ class TaskWrapper {
 					// Ищем слово поменьше
 					dp = Arrays.copyOfRange(digitPath, 0, digitPath.length - 1);
 				}
+				else {
+					break;
+				}
+			}
+			else {
+				phrase.addWord(word);
+				dp = Arrays.copyOfRange(digitPath, word.length() - 1, digitPath.length);
 			}
 		}
 
-        return phrase == null ? "No solution." : word;
+        return phrase.toString();
     }
 
 
+}
+
+class Phrase {
+	private ArrayList<String> words = new ArrayList<String>();
+	private String defaultValue;
+
+	public void addWord(String word) {
+		this.words.add(word);
+	}
+
+	@Override
+	public String toString() {
+		String result = "";
+		for (String word: this.words) {
+			result += word + " ";
+		}
+		return result.length() > 0
+				? result.substring(0, result.length() - 1)
+				: this.defaultValue;
+	}
+
+	public void setDefaultValue(String defaultValue) {
+		this.defaultValue = defaultValue;
+	}
 }
 
 class Trie {
