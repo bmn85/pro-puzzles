@@ -12,11 +12,10 @@ public class Task_1002 {
 }
 
 class TaskWrapper {
-	boolean         isOnlineJudge;
-	StreamTokenizer in;
-	PrintWriter     out;
-
-
+    boolean         isOnlineJudge;
+    StreamTokenizer in;
+    PrintWriter     out;
+	private Trie    rootTrie;
 
 	TaskWrapper() throws IOException {
 		this.isOnlineJudge = System.getProperty("ONLINE_JUDGE") != null;
@@ -33,9 +32,10 @@ class TaskWrapper {
 		this.out = new PrintWriter(writer);
 	}
 
-	public void solve() throws IOException {
-		while (this.in.nextToken() != StreamTokenizer.TT_EOF) {
-			if (this.in.nval == -1) break;
+    public void solve() throws IOException {
+		Phrase.setDefaultValue("No solution.");
+        while (this.in.nextToken() != StreamTokenizer.TT_EOF) {
+            if (this.in.nval == -1) break;
 
 			Double targetNumber = this.in.nval;
 			String targetNumberStr = Long.toString(targetNumber.longValue());
@@ -43,62 +43,49 @@ class TaskWrapper {
 			this.in.nextToken();
 			Integer helperSize  = (int)this.in.nval;
 
-			Trie t = new Trie('\0');
-			for (int i = 0; i < helperSize; i++) {
-				this.in.nextToken();
-				t.addWord(this.in.sval);
-			}
+            this.rootTrie = new Trie('\0');
+            for (int i = 0; i < helperSize; i++) {
+                this.in.nextToken();
+                this.rootTrie.addWord(this.in.sval);
+            }
 
-			this.out.println(this.findShortPhrase(t, targetNumberStr.toCharArray()));
-		}
+            this.out.println(this.findShortPhrase(targetNumberStr.toCharArray()));
+        }
 
 		this.out.flush();
 		this.out.close();
 	}
 
-	private String findShortPhrase(Trie t, char[] digitPath) {
-		ArrayList<Phrase> phrases = this.findAllPhrases(t, digitPath);
+	private String findShortPhrase(char[] digitPath) {
+		ArrayList<Phrase> phrases = this.findAllPhrases(digitPath);
 		Collections.sort(phrases);
 		return phrases.size() > 0 ? phrases.get(0).toString() : new Phrase().toString();
 	}
 
-	private Phrase findPhrase(Trie t, char[] digitStartPath, char[] digitFullPath) {
+    private void findPhrase(char[] digitStartPath, char[] digitFullPath, Phrase phrase) {
 		char[] dsp = digitStartPath;
-		boolean isFirstWord = true;
-		Phrase phrase = new Phrase();
-		phrase.setDefaultValue("No solution.");
 
-		while (dsp.length > 0) {
-			String word = t.findWord(dsp);
-			if (word == null) {
-				if (!isFirstWord && dsp.length > 1) {
-					dsp = Arrays.copyOfRange(dsp, 0, dsp.length - 1);
-				}
-				else {
-					break;
-				}
+		String word = this.rootTrie.findWord(dsp);
+		if (word == null) {
+			if (dsp.length > 0) {
+				this.findPhrase(Arrays.copyOfRange(dsp, 0, dsp.length - 1), digitFullPath, phrase);
 			}
-			else {
-				phrase.addWord(word);
-				dsp = Arrays.copyOfRange(digitFullPath, phrase.symbolsCount(), digitFullPath.length);
-				isFirstWord = false;
-			}
-		}
-
-		if (phrase.symbolsCount() == digitFullPath.length) {
-			return phrase;
 		}
 		else {
-			return null;
+			phrase.addWord(word);
+			dsp = Arrays.copyOfRange(digitFullPath, word.length(), digitFullPath.length);
+			this.findPhrase(dsp, dsp, phrase);
 		}
 	}
 
-	private ArrayList<Phrase> findAllPhrases(Trie t, char[] digitPath) {
+	private ArrayList<Phrase> findAllPhrases(char[] digitPath) {
 		ArrayList<Phrase> result = new ArrayList<>();
 
 		for (int i = 0; i < digitPath.length - 1; i++) {
-			Phrase p = this.findPhrase(t, Arrays.copyOfRange(digitPath, 0, digitPath.length - i), digitPath);
-			if (p != null) {
+			Phrase p = new Phrase();
+			this.findPhrase(Arrays.copyOfRange(digitPath, 0, digitPath.length - i), digitPath, p);
+
+			if (!p.isEmpty()) {
 				result.add(p);
 			}
 		}
@@ -134,12 +121,16 @@ class Phrase implements Comparable<Phrase> {
 		return result;
 	}
 
+	public boolean isEmpty() {
+		return this.words.size() == 0;
+	}
+
 	public int wordsCount() {
 		return this.words.size();
 	}
 
-	public void setDefaultValue(String defaultValue) {
-		this.defaultValue = defaultValue;
+	public static void setDefaultValue(String value) {
+		defaultValue = value;
 	}
 
 	@Override
@@ -200,24 +191,27 @@ class Trie {
 
 	private Trie addChar(Character c, Trie currNode) {
 		Character digit = DIGIT_MAP.get(c);
-		if (currNode.childs.containsKey(digit)) {
-			return currNode.childs.get(digit);
-		}
-		else {
-			currNode.childs.put(digit, new Trie(digit));
-			return currNode.childs.get(digit);
-		}
-	}
 
-	public String findWord(char[] digits) {
-		if (this.childs.containsKey(digits[0])) {
-			if ((digits.length == 1) && this.childs.get(digits[0]).word != null) {
-				return this.childs.get(digits[0]).word;
-			}
-			else if (digits.length > 1) {
-				return this.childs.get(digits[0]).findWord(Arrays.copyOfRange(digits, 1, digits.length));
+        if (currNode.childs.containsKey(digit)) {
+            return currNode.childs.get(digit);
+        }
+        else {
+            currNode.childs.put(digit, new Trie(digit));
+            return currNode.childs.get(digit);
+        }
+    }
+
+    public String findWord(char[] digits) {
+		if (digits.length > 0) {
+			if (this.childs.containsKey(digits[0])) {
+				if ((digits.length == 1) && this.childs.get(digits[0]).word != null) {
+					return this.childs.get(digits[0]).word;
+				}
+				else if (digits.length > 1) {
+					return this.childs.get(digits[0]).findWord(Arrays.copyOfRange(digits, 1, digits.length));
+				}
 			}
 		}
-		return null;
-	}
+        return null;
+    }
 }

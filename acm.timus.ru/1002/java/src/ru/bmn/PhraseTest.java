@@ -44,4 +44,14 @@ public class PhraseTest extends TestCase {
 		p.setDefaultValue("default string");
 		assertEquals("default string", p.toString());
 	}
+
+	public void testIsEmpty() throws Exception {
+		Phrase p = new Phrase();
+
+		assertTrue(p.isEmpty());
+
+		p.addWord("abc");
+
+		assertFalse(p.isEmpty());
+	}
 }
