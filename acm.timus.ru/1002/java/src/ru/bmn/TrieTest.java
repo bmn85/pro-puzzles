@@ -7,7 +7,7 @@ import junit.framework.TestCase;
  */
 public class TrieTest extends TestCase {
 	public void testFindWord() throws Exception {
-		Trie t = new Trie('\0');
+		Trie t = new Trie();
 		t.addWord("cat");
 
 		assertEquals(t.findWord(new char[] {'1', '2', '4'}), null);

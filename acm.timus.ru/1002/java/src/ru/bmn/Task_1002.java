@@ -12,19 +12,18 @@ public class Task_1002 {
 }
 
 class TaskWrapper {
-    boolean         isOnlineJudge;
-    StreamTokenizer in;
-    PrintWriter     out;
-	private Trie    rootTrie;
+	private StreamTokenizer in;
+	private PrintWriter     out;
+	private Trie            rootTrie;
 
 	TaskWrapper() throws IOException {
-		this.isOnlineJudge = System.getProperty("ONLINE_JUDGE") != null;
+		boolean isOnlineJudge = System.getProperty("ONLINE_JUDGE") != null;
 
-		Reader reader = this.isOnlineJudge
+		Reader reader = isOnlineJudge
 				? new InputStreamReader(System.in)
 				: new FileReader("input.txt");
 
-		Writer writer = this.isOnlineJudge
+		Writer writer = isOnlineJudge
 				? new OutputStreamWriter(System.out)
 				: new FileWriter("output.txt");
 
@@ -43,7 +42,7 @@ class TaskWrapper {
 			this.in.nextToken();
 			Integer helperSize  = (int)this.in.nval;
 
-            this.rootTrie = new Trie('\0');
+            this.rootTrie = new Trie();
             for (int i = 0; i < helperSize; i++) {
                 this.in.nextToken();
                 this.rootTrie.addWord(this.in.sval);
@@ -95,8 +94,12 @@ class TaskWrapper {
 }
 
 class Phrase implements Comparable<Phrase> {
-	private ArrayList<String> words = new ArrayList<>();
+	private ArrayList<String> words;
 	private static String defaultValue;
+
+	Phrase() {
+		this.words = new ArrayList<>();
+	}
 
 	public void addWord(String word) {
 		this.words.add(word);
@@ -142,9 +145,8 @@ class Phrase implements Comparable<Phrase> {
 }
 
 class Trie {
-	private Character value;
 	private String word;
-	private HashMap<Character, Trie> childs;
+	private HashMap<Character, Trie> childes;
 	private static final HashMap<Character, Character> DIGIT_MAP = new HashMap<Character, Character>() {{
 		put('a', '2');
 		put('b', '2');
@@ -174,9 +176,8 @@ class Trie {
 		put('z', '0');
 	}};
 
-	Trie(Character c) {
-		this.value = c;
-		this.childs = new HashMap<>();
+	Trie() {
+		this.childes = new HashMap<>();
 	}
 
 	public void addWord(String word) {
@@ -192,23 +193,23 @@ class Trie {
 	private Trie addChar(Character c, Trie currNode) {
 		Character digit = DIGIT_MAP.get(c);
 
-        if (currNode.childs.containsKey(digit)) {
-            return currNode.childs.get(digit);
+        if (currNode.childes.containsKey(digit)) {
+            return currNode.childes.get(digit);
         }
         else {
-            currNode.childs.put(digit, new Trie(digit));
-            return currNode.childs.get(digit);
+            currNode.childes.put(digit, new Trie());
+            return currNode.childes.get(digit);
         }
     }
 
     public String findWord(char[] digits) {
 		if (digits.length > 0) {
-			if (this.childs.containsKey(digits[0])) {
-				if ((digits.length == 1) && this.childs.get(digits[0]).word != null) {
-					return this.childs.get(digits[0]).word;
+			if (this.childes.containsKey(digits[0])) {
+				if ((digits.length == 1) && this.childes.get(digits[0]).word != null) {
+					return this.childes.get(digits[0]).word;
 				}
 				else if (digits.length > 1) {
-					return this.childs.get(digits[0]).findWord(Arrays.copyOfRange(digits, 1, digits.length));
+					return this.childes.get(digits[0]).findWord(Arrays.copyOfRange(digits, 1, digits.length));
 				}
 			}
 		}

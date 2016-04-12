@@ -41,7 +41,7 @@ public class PhraseTest extends TestCase {
 	public void testSetDefaultValue() throws Exception {
 		Phrase p = new Phrase();
 
-		p.setDefaultValue("default string");
+		Phrase.setDefaultValue("default string");
 		assertEquals("default string", p.toString());
 	}
 
