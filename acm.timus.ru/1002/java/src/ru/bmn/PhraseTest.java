@@ -54,4 +54,41 @@ public class PhraseTest extends TestCase {
 
 		assertFalse(p.isEmpty());
 	}
+
+	public void testIsComplete() throws Exception {
+		Phrase p = new Phrase();
+		Phrase.setCompleteLength(10);
+
+		assertFalse(p.isComplete());
+
+		p.addWord("abc");
+
+		assertFalse(p.isComplete());
+
+		p.addWord("1234567");
+
+		assertTrue(p.isComplete());
+	}
+
+	public void testCompareTo() throws Exception {
+		Phrase p1 = new Phrase();
+		p1.addWord("abc");
+		p1.addWord("abc");
+
+		Phrase p2 = new Phrase();
+		p2.addWord("abc");
+		p2.addWord("abc");
+		p2.addWord("abc");
+
+		assertEquals(p1.compareTo(p2), -1);
+
+		p1.addWord("abc");
+
+		assertEquals(p1.compareTo(p2), 0);
+
+		p1.addWord("abc");
+
+		assertEquals(p1.compareTo(p2), 1);
+
+	}
 }

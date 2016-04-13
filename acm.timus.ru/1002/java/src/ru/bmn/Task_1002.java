@@ -56,53 +56,66 @@ class TaskWrapper {
 	}
 
 	private String findShortPhrase(char[] digitPath) {
-		ArrayList<Phrase> phrases = this.findAllPhrases(digitPath);
+		Phrase.setCompleteLength(digitPath.length);
+
+		ArrayList<Phrase> phrases = new ArrayList<>();
+		this.findAllPhrases(digitPath, digitPath, phrases, new Phrase());
+
 		Collections.sort(phrases);
+
 		return phrases.size() > 0 ? phrases.get(0).toString() : new Phrase().toString();
 	}
 
-    private void findPhrase(char[] digitStartPath, char[] digitFullPath, Phrase phrase) {
-		char[] dsp = digitStartPath;
+    private void findAllPhrases(char[] digitPathOrigin, char[] digitPath, ArrayList<Phrase> phrases, Phrase currentPhrase) {
+		char[] dp = digitPath;
 
-		String word = this.rootTrie.findWord(dsp);
-		if (word == null) {
-			if (dsp.length > 0) {
-				this.findPhrase(Arrays.copyOfRange(dsp, 0, dsp.length - 1), digitFullPath, phrase);
+		while (dp.length > 0) {
+			String word = this.rootTrie.findWord(dp);
+			if (word == null) {
+				dp = Arrays.copyOfRange(dp, 0, dp.length - 1);
+				this.findAllPhrases(digitPathOrigin, dp, phrases, currentPhrase);
+
+			}
+			else {
+				currentPhrase.addWord(word);
+				dp = Arrays.copyOfRange(digitPathOrigin, word.length(), digitPathOrigin.length);
+				if (currentPhrase.isComplete()) {
+					phrases.add(new Phrase(currentPhrase));
+					currentPhrase.clean();
+					return;
+				}
 			}
 		}
-		else {
-			phrase.addWord(word);
-			dsp = Arrays.copyOfRange(digitFullPath, word.length(), digitFullPath.length);
-			this.findPhrase(dsp, dsp, phrase);
-		}
 	}
-
-	private ArrayList<Phrase> findAllPhrases(char[] digitPath) {
-		ArrayList<Phrase> result = new ArrayList<>();
-
-		for (int i = 0; i < digitPath.length - 1; i++) {
-			Phrase p = new Phrase();
-			this.findPhrase(Arrays.copyOfRange(digitPath, 0, digitPath.length - i), digitPath, p);
-
-			if (!p.isEmpty()) {
-				result.add(p);
-			}
-		}
-		return result;
-	}
-
 }
 
 class Phrase implements Comparable<Phrase> {
 	private ArrayList<String> words;
 	private static String defaultValue;
+	private static int completeLength;
+	private int currentLength = 0;
 
 	Phrase() {
 		this.words = new ArrayList<>();
 	}
 
+	Phrase(Phrase p) {
+		this.words = new ArrayList<>(p.words);
+	}
+
+	public static void setCompleteLength(int completeLength) {
+		Phrase.completeLength = completeLength;
+	}
+
 	public void addWord(String word) {
 		this.words.add(word);
+		this.currentLength += word.length();
+	}
+
+	public void clean() {
+		this.words.clear();
+		this.currentLength = 0;
+
 	}
 
 	@Override
@@ -117,11 +130,7 @@ class Phrase implements Comparable<Phrase> {
 	}
 
 	public int symbolsCount() {
-		int result = 0;
-		for (String word: this.words) {
-			result += word.length();
-		}
-		return result;
+		return this.currentLength;
 	}
 
 	public boolean isEmpty() {
@@ -134,6 +143,10 @@ class Phrase implements Comparable<Phrase> {
 
 	public static void setDefaultValue(String value) {
 		defaultValue = value;
+	}
+
+	public boolean isComplete() {
+		return this.currentLength == Phrase.completeLength;
 	}
 
 	@Override
