@@ -25,6 +25,14 @@ public class PhraseTest extends TestCase {
 		p.addWord("xyz");
 
 		assertEquals(6, p.symbolsCount());
+
+		p.addPhrasePart(p);
+
+		assertEquals(12, p.symbolsCount());
+
+		Phrase p2 = new Phrase(p);
+
+		assertEquals(12, p2.symbolsCount());
 	}
 
 	public void testWordsCount() throws Exception {
@@ -89,6 +97,21 @@ public class PhraseTest extends TestCase {
 		p1.addWord("abc");
 
 		assertEquals(p1.compareTo(p2), 1);
+
+	}
+
+	public void testAddPhrasePart() throws Exception {
+		Phrase p1 = new Phrase();
+		p1.addWord("abc");
+		p1.addWord("def");
+
+		Phrase p2 = new Phrase();
+		p2.addWord("123");
+		p2.addWord("456");
+
+		p2.addPhrasePart(p1);
+
+		assertEquals(p2.toString(), "123 456 abc def");
 
 	}
 }

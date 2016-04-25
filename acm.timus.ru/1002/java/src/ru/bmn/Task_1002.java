@@ -58,34 +58,38 @@ class TaskWrapper {
 	private String findShortPhrase(char[] digitPath) {
 		Phrase.setCompleteLength(digitPath.length);
 
-		ArrayList<Phrase> phrases = new ArrayList<>();
-		this.findAllPhrases(digitPath, digitPath, phrases, new Phrase());
+		ArrayList<Phrase> phrases = this.findAllPhrases(digitPath);
 
 		Collections.sort(phrases);
 
 		return phrases.size() > 0 ? phrases.get(0).toString() : new Phrase().toString();
 	}
 
-    private void findAllPhrases(char[] digitPathOrigin, char[] digitPath, ArrayList<Phrase> phrases, Phrase currentPhrase) {
-		char[] dp = digitPath;
+    private ArrayList<Phrase> findAllPhrases(char[] digitPath) {
+		char[] dp  = digitPath.clone();
+		ArrayList<Phrase> result = new ArrayList<>();
 
-		while (dp.length > 0) {
-			String word = this.rootTrie.findWord(dp);
-			if (word == null) {
-				dp = Arrays.copyOfRange(dp, 0, dp.length - 1);
-				this.findAllPhrases(digitPathOrigin, dp, phrases, currentPhrase);
-
-			}
-			else {
+		for (int i = 0; i < dp.length; i++) {
+			String word = this.rootTrie.findWord(Arrays.copyOfRange(dp, 0, dp.length - i));
+			if (word != null) {
+				Phrase currentPhrase = new Phrase();
 				currentPhrase.addWord(word);
-				dp = Arrays.copyOfRange(digitPathOrigin, word.length(), digitPathOrigin.length);
-				if (currentPhrase.isComplete()) {
-					phrases.add(new Phrase(currentPhrase));
-					currentPhrase.clean();
-					return;
+				if (currentPhrase.symbolsCount() == dp.length) {
+					result.add(currentPhrase);
+				}
+				else {
+					ArrayList<Phrase> phrases = this.findAllPhrases(Arrays.copyOfRange(dp, word.length(), dp.length));
+					for (Phrase p: phrases) {
+						Phrase deepPhrase = new Phrase(currentPhrase);
+						deepPhrase.addPhrasePart(p);
+						if (deepPhrase.symbolsCount() == dp.length) {
+							result.add(deepPhrase);
+						}
+					}
 				}
 			}
 		}
+		return result;
 	}
 }
 
@@ -101,6 +105,7 @@ class Phrase implements Comparable<Phrase> {
 
 	Phrase(Phrase p) {
 		this.words = new ArrayList<>(p.words);
+		this.currentLength += p.symbolsCount();
 	}
 
 	public static void setCompleteLength(int completeLength) {
@@ -112,10 +117,9 @@ class Phrase implements Comparable<Phrase> {
 		this.currentLength += word.length();
 	}
 
-	public void clean() {
-		this.words.clear();
-		this.currentLength = 0;
-
+	public void addPhrasePart(Phrase p) {
+		this.words.addAll(p.words);
+		this.currentLength += p.symbolsCount();
 	}
 
 	@Override
